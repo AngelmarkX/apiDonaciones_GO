@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Donaciones de Alimentos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: #e5e5e5;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem 0;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #fbbf24;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #a3a3a3;
+            font-weight: 400;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #404040;
+            padding-bottom: 0;
+        }
+
+        .tab {
+            padding: 1rem 1.5rem;
+            background: none;
+            border: none;
+            color: #a3a3a3;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab:hover {
+            color: #e5e5e5;
+        }
+
+        .tab.active {
+            color: #fbbf24;
+            border-bottom-color: #fbbf24;
+        }
+
+        .content {
+            display: none;
+        }
+
+        .content.active {
+            display: block;
+        }
+
+        .form-card {
+            background: #262626;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid #404040;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #d4d4d4;
+            margin-bottom: 0.5rem;
+        }
+
+        select {
+            padding: 0.75rem;
+            background: #1a1a1a;
+            border: 1px solid #404040;
+            border-radius: 8px;
+            color: #e5e5e5;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #fbbf24;
+        }
+
+        .donations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .donation-card {
+            background: #262626;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid #404040;
+            transition: all 0.2s;
+        }
+
+        .donation-card:hover {
+            border-color: #fbbf24;
+            transform: translateY(-2px);
+        }
+
+        .donation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+
+        .donation-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #e5e5e5;
+            margin-bottom: 0.25rem;
+        }
+
+        .status-badge {
+            padding: 0.375rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        /* Updated status badge colors to match dark theme */
+        .status-available {
+            background: #166534;
+            color: #86efac;
+        }
+
+        .status-reserved {
+            background: #9a3412;
+            color: #fdba74;
+        }
+
+        .status-completed {
+            background: #1e3a8a;
+            color: #93c5fd;
+        }
+
+        .status-expired {
+            background: #7f1d1d;
+            color: #fca5a5;
+        }
+
+        .donation-info {
+            color: #a3a3a3;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            margin-bottom: 0.5rem;
+        }
+
+        .donation-info strong {
+            color: #d4d4d4;
+        }
+
+        .category-tag {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: #404040;
+            color: #fbbf24;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #737373;
+            grid-column: 1 / -1;
+        }
+
+        .empty-state h3 {
+            color: #a3a3a3;
+            margin-bottom: 0.5rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #fbbf24;
+            grid-column: 1 / -1;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tabs {
+                overflow-x: auto;
+            }
+
+            .donations-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Donaciones de Alimentos</h1>
+            <p class="subtitle">Conectando donantes con quienes más lo necesitan</p>
+        </header>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('donations')">Ver Donaciones</button>
+            <button class="tab" onclick="switchTab('users')">Usuarios</button>
+        </div>
+
+        <div id="donations" class="content active">
+            <div class="form-card">
+                <h2 style="margin-bottom: 1rem; color: #fbbf24;">Filtrar Donaciones</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Estado</label>
+                        <select id="filterStatus" onchange="loadDonations()">
+                            <option value="">Todos</option>
+                            <option value="available">Disponible</option>
+                            <option value="reserved">Reservado</option>
+                            <option value="completed">Completado</option>
+                            <option value="expired">Expirado</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Categoría</label>
+                        <select id="filterCategory" onchange="loadDonations()">
+                            <option value="">Todas</option>
+                            <option value="bakery">Panadería</option>
+                            <option value="dairy">Lácteos</option>
+                            <option value="fruits">Frutas</option>
+                            <option value="meat">Carnes</option>
+                            <option value="canned">Enlatados</option>
+                            <option value="prepared">Comida Preparada</option>
+                            <option value="sugar">Azúcares</option>
+                            <option value="fats">Grasas</option>
+                            <option value="cereals">Cereales</option>
+                            <option value="beverages">Bebidas</option>
+                            <option value="furniture">Muebles</option>
+                            <option value="electronics">Electrónicos</option>
+                            <option value="clothing">Ropa</option>
+                            <option value="books">Libros</option>
+                            <option value="toys">Juguetes</option>
+                            <option value="appliances">Electrodomésticos</option>
+                            <option value="tools">Herramientas</option>
+                            <option value="sports">Deportes</option>
+                            <option value="office">Oficina</option>
+                            <option value="other">Otros</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div id="donationsList" class="donations-grid">
+                <div class="loading">Cargando donaciones...</div>
+            </div>
+        </div>
+
+        <div id="users" class="content">
+            <div id="usersList" class="donations-grid">
+                <div class="loading">Cargando usuarios...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8080';
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+
+            if (tabName === 'donations') {
+                loadDonations();
+            } else if (tabName === 'users') {
+                loadUsers();
+            }
+        }
+
+        async function loadDonations() {
+            const status = document.getElementById('filterStatus')?.value;
+            const category = document.getElementById('filterCategory')?.value;
+            
+            let url = `${API_URL}/donations`;
+            if (status) url = `${API_URL}/donations/status/${status}`;
+            else if (category) url = `${API_URL}/donations/category/${category}`;
+
+            try {
+                const response = await fetch(url);
+                const donations = await response.json();
+                displayDonations(donations);
+            } catch (error) {
+                document.getElementById('donationsList').innerHTML = `
+                    <div class="empty-state">
+                        <p>Error al cargar las donaciones. Asegúrate de que la API esté corriendo en ${API_URL}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function getCategoryName(category) {
+            const categoryNames = {
+                'bakery': 'Panadería',
+                'dairy': 'Lácteos',
+                'fruits': 'Frutas',
+                'meat': 'Carnes',
+                'canned': 'Enlatados',
+                'prepared': 'Comida Preparada',
+                'sugar': 'Azúcares',
+                'fats': 'Grasas',
+                'cereals': 'Cereales',
+                'beverages': 'Bebidas',
+                'furniture': 'Muebles',
+                'electronics': 'Electrónicos',
+                'clothing': 'Ropa',
+                'books': 'Libros',
+                'toys': 'Juguetes',
+                'appliances': 'Electrodomésticos',
+                'tools': 'Herramientas',
+                'sports': 'Deportes',
+                'office': 'Oficina',
+                'other': 'Otros'
+            };
+            return categoryNames[category] || category;
+        }
+
+        function getStatusName(status) {
+            const statusNames = {
+                'available': 'Disponible',
+                'reserved': 'Reservado',
+                'completed': 'Completado',
+                'expired': 'Expirado'
+            };
+            return statusNames[status] || status;
+        }
+
+        function displayDonations(donations) {
+            const container = document.getElementById('donationsList');
+            
+            if (!donations || donations.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>No hay donaciones disponibles</h3>
+                        <p>No se encontraron donaciones con los filtros seleccionados</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = donations.map(d => `
+                <div class="donation-card">
+                    <div class="donation-header">
+                        <div>
+                            <div class="donation-title">${d.title}</div>
+                            <span class="category-tag">${getCategoryName(d.category)}</span>
+                        </div>
+                        <span class="status-badge status-${d.status}">${getStatusName(d.status)}</span>
+                    </div>
+                    <p class="donation-info">${d.description}</p>
+                    <div class="donation-info">
+                        <strong>Cantidad:</strong> ${d.quantity} unidades
+                        ${d.weight ? `<br><strong>Peso:</strong> ${d.weight} kg` : ''}
+                        ${d.expiry_date ? `<br><strong>Expira:</strong> ${new Date(d.expiry_date).toLocaleDateString()}` : ''}
+                        <br><strong>Dirección:</strong> ${d.pickup_address}
+                        ${d.pickup_time ? `<br><strong>Hora:</strong> ${d.pickup_time}` : ''}
+                        ${d.contact_info ? `<br><strong>Contacto:</strong> ${d.contact_info}` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function loadUsers() {
+            try {
+                const response = await fetch(`${API_URL}/users`);
+                const users = await response.json();
+                displayUsers(users);
+            } catch (error) {
+                document.getElementById('usersList').innerHTML = `
+                    <div class="empty-state">
+                        <p>Error al cargar los usuarios</p>
+                    </div>
+                `;
+            }
+        }
+
+        function displayUsers(users) {
+            const container = document.getElementById('usersList');
+            
+            if (!users || users.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>No hay usuarios registrados</h3>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = users.map(u => `
+                <div class="donation-card">
+                    <div class="donation-title">${u.name}</div>
+                    <span class="category-tag">${u.user_type === 'donor' ? 'Donante' : 'Organización'}</span>
+                    <div class="donation-info" style="margin-top: 1rem;">
+                        <strong>Email:</strong> ${u.email}<br>
+                        <strong>Teléfono:</strong> ${u.phone || 'No especificado'}<br>
+                        <strong>Dirección:</strong> ${u.address || 'No especificado'}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        loadDonations();
+    </script>
+</body>
+</html>

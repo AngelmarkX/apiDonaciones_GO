@@ -95,6 +95,7 @@ func main() {
 	r.HandleFunc("/donations/confirmed/donor", getDonationsConfirmedByDonor).Methods("GET")
 	r.HandleFunc("/donations/confirmed/recipient", getDonationsConfirmedByRecipient).Methods("GET")
 	r.HandleFunc("/donations/confirmed/business", getDonationsConfirmedByBusiness).Methods("GET")
+	r.HandleFunc("/donations/search/{query}", searchDonations).Methods("GET")
 	r.HandleFunc("/donations", createDonation).Methods("POST")
 	r.HandleFunc("/donations/{id}", updateDonation).Methods("PUT")
 	r.HandleFunc("/donations/{id}", deleteDonation).Methods("DELETE")
@@ -650,4 +651,36 @@ func getUsersByDonationDays(w http.ResponseWriter, r *http.Request) {
 		users = append(users, u)
 	}
 	json.NewEncoder(w).Encode(users)
+}
+
+func searchDonations(w http.ResponseWriter, r *http.Request) {
+	query := mux.Vars(r)["query"]
+	searchTerm := "%" + query + "%"
+
+	rows, err := db.Query(`SELECT id, donor_id, title, description, category, quantity, expiry_date,
+		pickup_address, pickup_latitude, pickup_longitude, status, reserved_by, reserved_at,
+		pickup_time, pickup_person_name, pickup_person_id, verification_code, completed_at,
+		created_at, updated_at, donor_confirmed, recipient_confirmed, business_confirmed,
+		business_confirmed_at, donor_confirmed_at, recipient_confirmed_at, weight,
+		donation_reason, contact_info FROM donations 
+		WHERE title LIKE ? OR description LIKE ? OR category LIKE ? OR pickup_address LIKE ?`,
+		searchTerm, searchTerm, searchTerm, searchTerm)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	defer rows.Close()
+
+	var donations []Donation
+	for rows.Next() {
+		var d Donation
+		rows.Scan(&d.ID, &d.DonorID, &d.Title, &d.Description, &d.Category, &d.Quantity, &d.ExpiryDate,
+			&d.PickupAddress, &d.PickupLatitude, &d.PickupLongitude, &d.Status, &d.ReservedBy, &d.ReservedAt,
+			&d.PickupTime, &d.PickupPersonName, &d.PickupPersonID, &d.VerificationCode, &d.CompletedAt,
+			&d.CreatedAt, &d.UpdatedAt, &d.DonorConfirmed, &d.RecipientConfirmed, &d.BusinessConfirmed,
+			&d.BusinessConfirmedAt, &d.DonorConfirmedAt, &d.RecipientConfirmedAt, &d.Weight,
+			&d.DonationReason, &d.ContactInfo)
+		donations = append(donations, d)
+	}
+	json.NewEncoder(w).Encode(donations)
 }
